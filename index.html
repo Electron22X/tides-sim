@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tidal Forces — Educational Simulation</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="canvas-container"></div>
+
+<div id="title">
+  <h1>Tidal Force Simulation</h1>
+  <p>Educational Edition · by Lily and Virakyut</p>
+  <p style="font-size: 9px; opacity: 0.6;">Drag to rotate · Scroll to zoom</p>
+</div>
+
+<!-- Sidebar for Configuration and Presets -->
+<button class="ctrl-btn sidebar-toggle">Settings</button>
+<div class="sidebar">
+  <div class="config-section">
+    <h3>Simulation Controls</h3>
+    <div style="display: flex; gap: 8px;">
+      <button class="ctrl-btn" id="btn-pause" style="flex: 1;">Pause</button>
+      <button class="ctrl-btn" id="btn-playback" style="flex: 1;">Replay 10s</button>
+    </div>
+  </div>
+
+  <div class="config-section">
+    <h3>Teaching Scenarios</h3>
+    <div style="display: grid; gap: 8px;">
+      <button class="ctrl-btn active" id="btn-mercury">Mercury Orbit (Extreme Tides)</button>
+      <button class="ctrl-btn" id="btn-earth">Earth Orbit (Normal Tides)</button>
+      <button class="ctrl-btn" id="btn-spring">Spring Tide Case</button>
+      <button class="ctrl-btn" id="btn-neap">Neap Tide Case</button>
+    </div>
+  </div>
+
+  <div class="config-section">
+    <h3>Parameter Configuration</h3>
+    <div class="input-group">
+      <label>Orbit Distance (AU)</label>
+      <input type="range" min="0.3" max="1.5" step="0.01" value="0.39" id="slider-dist">
+      <div id="val-dist-readout" style="font-size: 10px; text-align: right;">0.39 AU</div>
+    </div>
+    <div class="input-group">
+      <label>Simulation Speed</label>
+      <input type="range" min="0.1" max="3" step="0.1" value="1" id="slider-speed">
+    </div>
+  </div>
+
+  <div class="config-section">
+    <h3>Real-time Data</h3>
+    <div class="chart-container" id="tide-chart">
+      <!-- Chart will be rendered here -->
+    </div>
+  </div>
+  
+  <div class="config-section">
+    <h3>Assessment</h3>
+    <button class="ctrl-btn" style="width: 100%;" id="btn-quiz">Start Practice Quiz</button>
+  </div>
+  
+  <div class="config-section">
+    <h3>Report Export</h3>
+    <button class="ctrl-btn" style="width: 100%;" id="btn-export">Export Session Report (CSV)</button>
+  </div>
+</div>
+
+<div id="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#ff7b4a"></div>HIGH TIDE bulge</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3B8BD4"></div>LOW TIDE zone</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#F2A623"></div>Sun (tidal source)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#c8d8f0"></div>Moon (orbiting)</div>
+</div>
+
+<div id="info-panel">
+  <div class="info-card">
+    <div class="tag">Orbit</div>
+    <div class="val hot" id="val-orbit">0.39 AU</div>
+    <div class="sub">Distance from Sun</div>
+  </div>
+  <div class="info-card highlight">
+    <div class="tag">Solar tidal force</div>
+    <div class="val hot" id="val-tidal">17.6×</div>
+    <div class="sub">vs normal Earth</div>
+  </div>
+  <div class="info-card">
+    <div class="tag">Tidal bulge</div>
+    <div class="val hot">BOTH sides</div>
+    <div class="sub">Differential gravity</div>
+  </div>
+</div>
+
+<div id="orbit-label">— Mercury orbit path —</div>
+
+<!-- Minimap -->
+<div id="minimap-wrap">
+  <div id="minimap-header">
+    TOP VIEW <span id="mm-mode-label">MERCURY ORBIT</span>
+  </div>
+  <canvas id="minimap"></canvas>
+  <div id="minimap-footer">orbital position map</div>
+</div>
+
+<!-- Quiz Modal -->
+<div id="quiz-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center;">
+  <div style="background: #060e1e; border: 1px solid #7ecfff; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%;">
+    <h2 style="color: #7ecfff; font-family: 'Space Mono', monospace; margin-bottom: 15px;">Practice Quiz</h2>
+    <div id="quiz-content">
+      <p id="quiz-question" style="margin-bottom: 20px;"></p>
+      <div id="quiz-options" style="display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+    <div id="quiz-result" style="display: none; margin-top: 20px; border-top: 1px solid rgba(126,207,255,0.2); padding-top: 20px;">
+      <h3 id="result-title"></h3>
+      <p id="result-text"></p>
+      <button class="ctrl-btn" style="margin-top: 15px;" onclick="document.getElementById('quiz-modal').style.display='none'">Close</button>
+    </div>
+  </div>
+</div>
+<div class="step-guide" id="step-guide">
+  <h4 style="font-family: 'Space Mono', monospace; color: #7ecfff; margin-bottom: 5px;">Lesson 1: Gravity & Tides</h4>
+  <p style="font-size: 11px; line-height: 1.4;">Tides are caused by the difference in gravitational pull across a planet. Observe how the bulge always aligns with the Sun.</p>
+  <button class="ctrl-btn" style="margin-top: 10px; padding: 4px 8px;" onclick="this.parentElement.style.display='none'">Got it</button>
+</div>
+
+<!-- Hover Annotation -->
+<div id="hover-annotation" class="concept-annotation" style="display: none; pointer-events: none;"></div>
+
+<script type="module">
+  import { TidalSimulation } from './js/simulation.js';
+  import { UIManager } from './js/ui.js';
+  
+  const sim = new TidalSimulation('canvas-container');
+  const ui = new UIManager(sim);
+  
+  // Expose for debugging if needed
+  window.sim = sim;
+  window.ui = ui;
+</script>
+</body>
+</html>
